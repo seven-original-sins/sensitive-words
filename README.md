@@ -36,3 +36,19 @@ export DB_SECURITY_READ_DATABASE=yourdatabase
 export DB_SECURITY_READ_USERNAME=username
 export DB_SECURITY_READ_PASSWORD=password
 ```
+
+## API
+search 
+```
+curl -X POST \
+  http://localhost:9999/words/search \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Postman-Token: 3e54ebf8-90a2-41fe-bc30-9bfbbc6dbcb1' \
+  -H 'cache-control: no-cache' \
+  -d 'content=TMD'
+```
+
+reload
+```
+curl http://localhost:9999/words/reload
+```
