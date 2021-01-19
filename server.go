@@ -189,12 +189,12 @@ type HitWord struct {
 	Word string `json:"word"`
 }
 
-type authorFunc func(ctx *fasthttp.RequestCtx) bool
+type AuthorFunc func(ctx *fasthttp.RequestCtx) bool
 
-func (f authorFunc) Auth(ctx *fasthttp.RequestCtx) bool {
+func (f AuthorFunc) Auth(ctx *fasthttp.RequestCtx) bool {
 	return f(ctx)
 }
 
-func BuildAuthorFunc(f func(*fasthttp.RequestCtx) bool) authorFunc {
-	return authorFunc(f)
+func BuildAuthorFunc(f func(*fasthttp.RequestCtx) bool) AuthorFunc {
+	return AuthorFunc(f)
 }

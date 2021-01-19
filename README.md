@@ -2,6 +2,7 @@
 基于 aho-corasick 算法的敏感词检测 web 服务器
 
 ## 功能
+- request auth token
 - 查找内容中所有敏感词（HTTP）
 - 监听字典数据源变化（新增/删除word），自动更新 trie
 - 手动触发 reload（HTTP）
