@@ -29,6 +29,7 @@ CREATE TABLE `t_sensitive_word` (
 
 ## 环境变量
 ```
+export SENSITIVE_TOKEN=yourtoken
 export SENSITIVE_LISTEN_ADDR=:9999
 export DB_SECURITY_READ_HOST=localhost
 export DB_SECURITY_READ_PORT=3306

@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Token string
 	ListenAddr string
 	DBHost string
 	DBPort string
@@ -26,6 +27,11 @@ func init() {
 
 func LoadConfig() (*Config, error) {
 	newCfg := new(Config)
+
+	newCfg.Token = os.Getenv("SENSITIVE_TOKEN")
+	if newCfg.Token == "" {
+		return nil, fmt.Errorf("SENSITIVE_TOKEN cannot be null")
+	}
 
 	newCfg.ListenAddr = os.Getenv("SENSITIVE_LISTEN_ADDR")
 	if newCfg.ListenAddr == "" {

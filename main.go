@@ -7,17 +7,21 @@ import (
 )
 
 func main() {
+	cfg := config.GetConfig()
 	// init server
 	s := new(Server)
-	err := s.Build()
+	// register author
+	author := BuildAuthorFunc(func(ctx *fasthttp.RequestCtx) bool {
+		token := ctx.FormValue("token")
+		return string(token) == cfg.Token
+	})
+	err := s.Build(author)
 	defer s.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	s.WatchDictChange()
-
-	cfg := config.GetConfig()
 
 	// run http server
 	if err := fasthttp.ListenAndServe(cfg.ListenAddr, s.HandleFastHTTP); err != nil {

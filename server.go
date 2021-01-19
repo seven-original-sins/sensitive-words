@@ -8,6 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/valyala/fasthttp"
 	"log"
+	"net/http"
 	"sensitive/config"
 	"sensitive/tools"
 	"sync"
@@ -19,12 +20,19 @@ type Server struct {
 	db *sql.DB
 	m *goahocorasick.Machine
 	rw sync.RWMutex
+	author Author
+}
+
+// request author
+type Author interface {
+	Auth(ctx *fasthttp.RequestCtx) bool
 }
 
 // build DB and Machine.
-func (s *Server) Build() error {
+func (s *Server) Build(author Author) error {
 	var err error
 	cfg := config.GetConfig()
+	s.author = author
 
 	s.db, err = sql.Open("mysql", cfg.DBUsername + ":" + cfg.DBPassword + "@(" + cfg.DBHost + ":" + cfg.DBPort + ")/" + cfg.DBDatabase)
 	if err != nil {
@@ -107,6 +115,14 @@ func (s *Server) LoadWords() error {
 
 // handle http request.
 func (s *Server) HandleFastHTTP(ctx *fasthttp.RequestCtx) {
+	// authorization
+	if s.author != nil {
+		result := s.author.Auth(ctx)
+		if !result {
+			ctx.Error("unauthorized.", http.StatusForbidden)
+			return
+		}
+	}
 	switch string(ctx.Path()) {
 	case "/words/reload":
 		s.reloadWords(ctx)
@@ -171,4 +187,14 @@ type SearchResponse struct {
 type HitWord struct {
 	Pos int `json:"pos"`
 	Word string `json:"word"`
+}
+
+type authorFunc func(ctx *fasthttp.RequestCtx) bool
+
+func (f authorFunc) Auth(ctx *fasthttp.RequestCtx) bool {
+	return f(ctx)
+}
+
+func BuildAuthorFunc(f func(*fasthttp.RequestCtx) bool) authorFunc {
+	return authorFunc(f)
 }
