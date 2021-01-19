@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"bytes"
@@ -16,10 +16,10 @@ import (
 )
 
 type Server struct {
-	count int
-	db *sql.DB
-	m *goahocorasick.Machine
-	rw sync.RWMutex
+	count  int
+	db     *sql.DB
+	m      *goahocorasick.Machine
+	rw     sync.RWMutex
 	author Author
 }
 
@@ -180,7 +180,7 @@ func (s *Server) search(ctx *fasthttp.RequestCtx) {
 }
 
 type SearchResponse struct {
-	Type string `json:"type"`
+	Type string       `json:"type"`
 	Result []*HitWord `json:"result"`
 }
 
@@ -197,4 +197,16 @@ func (f AuthorFunc) Auth(ctx *fasthttp.RequestCtx) bool {
 
 func BuildAuthorFunc(f func(*fasthttp.RequestCtx) bool) AuthorFunc {
 	return f
+}
+
+func New(author Author) (*Server, error) {
+	// init server
+	s := new(Server)
+	err := s.Build(author)
+	defer s.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return s, nil
 }
