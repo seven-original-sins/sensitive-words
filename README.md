@@ -12,11 +12,6 @@
 - [anknown/ahocorasick](github.com/anknown/ahocorasick)
 - [fasthttp](github.com/valyala/fasthttp)
 
-## 安装
-```
-git clone https://github.com/seven-original-sins/sensitive-words.git
-```
-
 ## mysql 数据源表结构
 ```sql
 CREATE TABLE `t_sensitive_word` (
