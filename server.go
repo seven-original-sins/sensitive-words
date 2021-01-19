@@ -196,5 +196,5 @@ func (f AuthorFunc) Auth(ctx *fasthttp.RequestCtx) bool {
 }
 
 func BuildAuthorFunc(f func(*fasthttp.RequestCtx) bool) AuthorFunc {
-	return AuthorFunc(f)
+	return f
 }
