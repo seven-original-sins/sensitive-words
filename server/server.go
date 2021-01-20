@@ -16,7 +16,7 @@ import (
 )
 
 type Server struct {
-	count  int
+	needReload bool
 	db     *sql.DB
 	m      *goahocorasick.Machine
 	rw     sync.RWMutex
@@ -58,21 +58,12 @@ func (s *Server) Close() {
 func (s *Server) WatchDictChange() {
 	go func() {
 		for {
-			count := 0
-			row := s.db.QueryRow("select count(*) from t_sensitive_word where _iDeleteTime = 0")
-
-			if err := row.Scan(&count); err != nil {
-				time.Sleep(time.Second * 5)
-				continue
-			}
-
 			s.rw.RLock()
-			sc := s.count
+			needReload := s.needReload
 			s.rw.RUnlock()
-			if count != sc {
+			if needReload {
 				_ = s.LoadWords()
 			}
-
 
 			time.Sleep(time.Second * 5)
 		}
@@ -104,12 +95,11 @@ func (s *Server) LoadWords() error {
 
 	s.rw.Lock()
 	defer s.rw.Unlock()
-	s.count = len(dict)
 	s.m = new(goahocorasick.Machine)
 	if err := s.m.Build(dict); err != nil {
 		return err
 	}
-
+	s.needReload = false
 	return nil
 }
 
@@ -138,15 +128,8 @@ type ReloadWordsResponse struct {
 
 // reload dict.
 func (s *Server) reloadWords(ctx *fasthttp.RequestCtx) {
-	err := s.LoadWords()
-	result := true
-	msg := ""
-	if err != nil {
-		result = false
-		msg = err.Error()
-	}
-
-	tools.WriteJSON(ctx, &ReloadWordsResponse{Result: result, Msg: msg})
+	s.needReload = true
+	tools.WriteJSON(ctx, &ReloadWordsResponse{Result: true, Msg: "success"})
 }
 
 // /words/search request handler.
@@ -203,7 +186,6 @@ func New(author Author) (*Server, error) {
 	// init server
 	s := new(Server)
 	err := s.Build(author)
-	defer s.Close()
 	if err != nil {
 		return nil, err
 	}
